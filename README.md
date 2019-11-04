@@ -1,17 +1,13 @@
-# feedme
+# Feedme Mobile Client
 
-A new Flutter project.
+The mobile client for feedme is written using Google's Flutter Framework and the Dart Language. To run this client locally, you need to have the following software installations:
 
-## Getting Started
+* Android Studio / Xcode (depending on whether you want to run on Android or iOS)
+    - **For Android:** you need build tools v28.03 and Android SDK 28
+    - **For Xcode:** make sure you install developer tools (`xcode-select --install`) and agree to the terms of use by openning Xcode once
+* The Flutter Framework:
+    - [Use this link for a guide to installing flutter on your machine and OS.](https://flutter.dev/docs/get-started/install)
+* For development you can use an IDE like XCode or Android Studio, a "smart" text editor like VSCode with the Flutter extension installed, or just a plain old text editor and command line
+* Run `flutter doctor` to make sure your install is all good.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# mobile
+Connect a device or emulator and then, from the root of the project, run `flutter run` to deploy.
