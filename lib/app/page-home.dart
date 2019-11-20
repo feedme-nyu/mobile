@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
-import 'consts.dart';
-import 'decisions.dart';
+
+import 'package:feedme/app/consts.dart';
+import 'package:feedme/app/page-decisions.dart';
+import 'package:feedme/app/page-profile.dart';
+
+import 'package:feedme/struct/user.dart';
+import 'package:feedme/struct/decision.dart';
+import 'package:feedme/struct/restaurant.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title, this.user}) : super(key: key);
 
+  final User user;
   final String title;
 
   @override
@@ -17,6 +24,35 @@ class _MyHomePageState extends State<MyHomePage>
   bool showMenu = false;
   AnimationController menuAnimationController;
   Animation<double> scaleAnimation;
+
+  List <Decision> _getDecisions () {
+    return <Decision> [
+      Decision(
+        recommendation: Restaurant(
+          imageUrl: "https://lh5.googleusercontent.com/p/AF1QipOkvxJ12kb6bAkfdMWpVLQ1rIOtuI3rwvcL4k33=w203-h135-k-no",
+          name: "Yaso Tangbao",
+          address: "148 Lawrence St, Brooklyn, NY 11201",
+          mapsUrl: "https://goo.gl/maps/ySp9Lz1avZcjFmA39",
+        )
+      ),
+      Decision(
+        recommendation: Restaurant(
+          imageUrl: "https://lh5.googleusercontent.com/p/AF1QipNGZhzPJ_OhRyYxRfdPHdHtn7KXgDCGlRQ78UD9=w203-h270-k-no",
+          name: "Golden Fried Dumpling",
+          address: "192 Duffield St, Brooklyn, NY 11201",
+          mapsUrl: "https://goo.gl/maps/z5UGnAJWE8edX61e7",
+        )
+      ),
+      Decision(
+        recommendation: Restaurant(
+          imageUrl: "https://lh5.googleusercontent.com/p/AF1QipM3KjHPcWdzT-0uETX5F-WshJXtWNCUKqo64axY=w203-h152-k-no",
+          name: "Kind Dumpling",
+          address: "74 Hester St, New York, NY 10002",
+          mapsUrl: "https://goo.gl/maps/SoMWEBeCd6Jv9g6QA",
+        )
+      ),
+    ];
+  }
 
   @override
   void initState() {
@@ -64,10 +100,17 @@ class _MyHomePageState extends State<MyHomePage>
                   },
                   child: Padding(
                     padding: EdgeInsets.all(16.0),
-                    child: Image.asset(
-                      showMenu ? "assets/images/profile-anim.gif" : "assets/images/profile.png",
-                      width: 64.0,
-                    )
+                    child: Container (
+                      width: 54.0,
+                      height: 54.0,
+                      decoration: new BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: NetworkImage(widget.user.identity.photoUrl),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -86,7 +129,14 @@ class _MyHomePageState extends State<MyHomePage>
                         height: 50.0,
                         width: 150.0,
                         child: FlatButton (
-                          onPressed: () { }, 
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) { 
+                                showMenu = false;
+                                return ProfilePage(user: widget.user,);
+                              })
+                            );
+                          }, 
                           child: Text("My Profile"),
                         ),
                       ),
@@ -115,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage>
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(builder: (context) { 
-                              return DecisionPage();
+                              return DecisionPage(decisions: _getDecisions(),);
                             })
                           );
                         },

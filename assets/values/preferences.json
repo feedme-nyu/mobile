@@ -1,0 +1,98 @@
+[
+    {
+        "name": "Peanut Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Shellfish Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Dairy Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Lactose Intollerance",
+        "category": "allergy"
+    },
+    {
+        "name": "Egg Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Wheat Products Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Shellfish Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Treenut Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Soy Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Fish Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Sesame Allergy",
+        "category": "allergy"
+    },
+    {
+        "name": "Hallal",
+        "category": "restriction"
+    },
+    {
+        "name": "Kosher",
+        "category": "restriction"
+    },
+    {
+        "name": "Vegan",
+        "category": "restriction"
+    },
+    {
+        "name": "Vegetarian",
+        "category": "restriction"
+    },
+    {
+        "name": "Pescatarian",
+        "category": "restriction"
+    },
+    {
+        "name": "Diabetic",
+        "category": "restriction"
+    },
+    {
+        "name": "Low Carbohydrate",
+        "category": "diet"
+    },
+    {
+        "name": "Keto",
+        "category": "diet"
+    },
+    {
+        "name": "Mediterranean",
+        "category": "diet"
+    },
+    {
+        "name": "Caveman",
+        "category": "diet"
+    },
+    {
+        "name": "General Healthy",
+        "category": "diet"
+    },
+    {
+        "name": "Korean",
+        "category": "cuisine"
+    },
+    {
+        "name": "Chinese",
+        "category": "cuisine"
+    }
+]

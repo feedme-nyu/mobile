@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import 'signin.dart';
-import 'homepage.dart';
+import 'package:feedme/app/page-signin.dart';
+import 'package:feedme/app/page-home.dart';
+import 'package:feedme/struct/user.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  Future<bool> _showLoginPage() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = !prefs.getBool("loggedin");
-    return isLoggedIn;
+  Future<User> _showLoginPage() async {
+    FirebaseAuth _auth = FirebaseAuth.instance;
+    FirebaseUser user = await _auth.currentUser();
+    if (user == null) {
+      throw "No registered user";
+    }
+    return User(user);
   }
   
   @override
@@ -20,11 +25,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: FutureBuilder<bool>(
+      home: FutureBuilder<User>(
         future: _showLoginPage(),
         builder: (buildContext, snapshot) {
-          if (snapshot.hasData && snapshot.data) {
-            return MyHomePage(title: 'Feed Me');
+          if (snapshot.hasData) {
+            return MyHomePage(title: 'Feed Me', user: snapshot.data);
           }
           else {
             return LoginPage();

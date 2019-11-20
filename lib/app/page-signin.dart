@@ -3,8 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'homepage.dart';
-import 'consts.dart';
+import 'package:feedme/app/page-home.dart';
+import 'package:feedme/app/consts.dart';
+import 'package:feedme/struct/user.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
@@ -17,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn();
 
-  Future<String> _signInWithGoogle() async {
+  Future<User> _signInWithGoogle() async {
     GoogleSignInAccount googleSignInAccount;
     try {
       googleSignInAccount = await googleSignIn.signIn();
@@ -42,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     final FirebaseUser currentUser = await _auth.currentUser();
     assert(user.uid == currentUser.uid);
 
-    return 'signInWithGoogle succeeded: $user';
+    return User(user);
   }
 
   @override
@@ -73,11 +74,10 @@ class _LoginPageState extends State<LoginPage> {
                 borderSide: BorderSide(color: Colors.grey),
                 highlightElevation: 0,
                 onPressed: () {
-                  _signInWithGoogle().then((value) {
-
+                  _signInWithGoogle().then((user) {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (context) { 
-                        return MyHomePage(title: "Feed Me");
+                        return MyHomePage(title: "Feed Me", user: user);
                       })
                     );
                   }).catchError((error) {});
