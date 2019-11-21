@@ -1,4 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:feedme/app/page-loader.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:feedme/app/consts.dart';
 import 'package:feedme/app/page-decisions.dart';
@@ -7,6 +13,9 @@ import 'package:feedme/app/page-profile.dart';
 import 'package:feedme/struct/user.dart';
 import 'package:feedme/struct/decision.dart';
 import 'package:feedme/struct/restaurant.dart';
+
+import 'package:flutter/foundation.dart' as Foundation;
+import 'package:http/http.dart' as http;
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title, this.user}) : super(key: key);
@@ -24,34 +33,29 @@ class _MyHomePageState extends State<MyHomePage>
   bool showMenu = false;
   AnimationController menuAnimationController;
   Animation<double> scaleAnimation;
+  bool showDia = false;
 
-  List <Decision> _getDecisions () {
-    return <Decision> [
-      Decision(
-        recommendation: Restaurant(
-          imageUrl: "https://lh5.googleusercontent.com/p/AF1QipOkvxJ12kb6bAkfdMWpVLQ1rIOtuI3rwvcL4k33=w203-h135-k-no",
-          name: "Yaso Tangbao",
-          address: "148 Lawrence St, Brooklyn, NY 11201",
-          mapsUrl: "https://goo.gl/maps/ySp9Lz1avZcjFmA39",
-        )
-      ),
-      Decision(
-        recommendation: Restaurant(
-          imageUrl: "https://lh5.googleusercontent.com/p/AF1QipNGZhzPJ_OhRyYxRfdPHdHtn7KXgDCGlRQ78UD9=w203-h270-k-no",
-          name: "Golden Fried Dumpling",
-          address: "192 Duffield St, Brooklyn, NY 11201",
-          mapsUrl: "https://goo.gl/maps/z5UGnAJWE8edX61e7",
-        )
-      ),
-      Decision(
-        recommendation: Restaurant(
-          imageUrl: "https://lh5.googleusercontent.com/p/AF1QipM3KjHPcWdzT-0uETX5F-WshJXtWNCUKqo64axY=w203-h152-k-no",
-          name: "Kind Dumpling",
-          address: "74 Hester St, New York, NY 10002",
-          mapsUrl: "https://goo.gl/maps/SoMWEBeCd6Jv9g6QA",
-        )
-      ),
-    ];
+  Future <http.Response> _getDecisions () async {
+    String api = "";
+    if (Foundation.kReleaseMode) {
+      // Release
+      api = "https://feedme-75319.appspot.com/api/FEEDME";
+    }
+    else {
+      api = "http://localhost:5000/api/FEEDME";
+    }
+    
+    GeolocationStatus geostatus = await Geolocator().checkGeolocationPermissionStatus();
+    if (geostatus == GeolocationStatus.denied) {
+      throw "location";
+    }
+    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    String token = await widget.user.identity.getIdToken();
+
+    String uid = "teddy";
+    String query = "?uid=" + uid + "&x=" + position.latitude.toString() + "&y=" + position.longitude.toString();
+    return http.get(api + query, headers: {HttpHeaders.authorizationHeader: "Bearer " + token});     
   }
 
   @override
@@ -77,6 +81,27 @@ class _MyHomePageState extends State<MyHomePage>
     }
     else {
       menuAnimationController.reverse();
+    }
+
+    if (showDia) {
+      
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Not in stock'),
+            content: const Text('This item is no longer available'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Ok'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
 
     return GestureDetector (
@@ -163,11 +188,21 @@ class _MyHomePageState extends State<MyHomePage>
                       padding: EdgeInsets.all(24.0),
                       child: OutlineButton(
                         onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) { 
-                              return DecisionPage(decisions: _getDecisions(),);
-                            })
-                          );
+                          try {
+                            Future<http.Response> decisionGetter = _getDecisions();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) { 
+                                return LoadingPage(decisionGetter, widget.user);
+                              })
+                            );
+                          }
+                          catch (onError) {
+                            if (onError == "location") {
+                              setState(() {
+                                showDia = true;
+                              });
+                            }
+                          }
                         },
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
                         borderSide: BorderSide(color: primary),

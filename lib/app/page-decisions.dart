@@ -1,135 +1,210 @@
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:feedme/struct/user.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:feedme/app/consts.dart';
 import 'package:feedme/struct/decision.dart';
+import 'widget-animated-card.dart';
+import 'widget-back-card.dart';
 
 class DecisionPage extends StatefulWidget {
   final List<Decision> decisions;
-  
-  DecisionPage({Key key, this.decisions}) : super(key: key);
+  final User user;
+
+  DecisionPage(this.decisions, this.user, {Key key}) : super(key: key);
 
   @override
   _DecisionPageState createState() => _DecisionPageState();
 }
 
 class _DecisionPageState extends State<DecisionPage>
-  with SingleTickerProviderStateMixin {
-  
-  static final double translation = 200.0;
-  final RelativeRectTween rectAnimation = RelativeRectTween(
-    begin: RelativeRect.fromLTRB(10, 0.0, 10.0, 0.0),
-    end: RelativeRect.fromLTRB(10.0 - translation, 0.0, 10.0 + translation, 0.0),
-  );
+    with SingleTickerProviderStateMixin {
+  AnimationController _buttonController;
+  Animation<double> rotate;
+  Animation<double> right;
+  Animation<double> bottom;
+  Animation<double> width;
+  int flag = 0;
 
+  void initState() {
+    super.initState();
 
-  Widget decisionCard(Decision decision, BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 0.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget> [
-          Container(
-            width: MediaQuery.of(context).size.width * 0.80,
-            height: MediaQuery.of(context).size.width * 0.80,
-            decoration: new BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-            child: Center(
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.70,
-                height: MediaQuery.of(context).size.width * 0.70,
-                decoration: new BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: NetworkImage(decision.recommendation.imageUrl),
-                  )
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(0, 16.0, 0, 8.0),
-            child: Text(decision.recommendation.name, style: TextStyle(fontSize: 24.0),),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              IconButton(
-                onPressed: () async {
-                  if (await canLaunch(decision.recommendation.mapsUrl)) {
-                    await launch(decision.recommendation.mapsUrl);
-                  }
-                  else {
-                    Fluttertoast.showToast(
-                      msg: "Something went wrong...",
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.BOTTOM,
-                      timeInSecForIos: 2,
-                      textColor: Colors.white,
-                      fontSize: 16.0
-                    );
-                  }
-                },
-                icon: Icon(Icons.map), 
-              ),
-              Expanded(
-                child: Text(decision.recommendation.address, textAlign: TextAlign.left,),
-              ),
-            ],
-          )
-        ],
+    _buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 1000), vsync: this);
+
+    rotate = new Tween<double>(
+      begin: -0.0,
+      end: -40.0,
+    ).animate(
+      new CurvedAnimation(
+        parent: _buttonController,
+        curve: Curves.ease,
       ),
     );
+    rotate.addListener(() {
+      setState(() {
+        if (rotate.isCompleted) {
+          var i = widget.decisions.removeLast();
+          widget.decisions.insert(0, i);
+
+          _buttonController.reset();
+        }
+      });
+    });
+
+    right = new Tween<double>(
+      begin: 0.0,
+      end: 400.0,
+    ).animate(
+      new CurvedAnimation(
+        parent: _buttonController,
+        curve: Curves.ease,
+      ),
+    );
+    bottom = new Tween<double>(
+      begin: 15.0,
+      end: 100.0,
+    ).animate(
+      new CurvedAnimation(
+        parent: _buttonController,
+        curve: Curves.ease,
+      ),
+    );
+    width = new Tween<double>(
+      begin: 20.0,
+      end: 25.0,
+    ).animate(
+      new CurvedAnimation(
+        parent: _buttonController,
+        curve: Curves.bounceOut,
+      ),
+    );
+
+    // Sort
+    // widget.decisions.sort((Decision a, Decision b) {
+    //   return a.recommendation.score.compareTo(b.recommendation.score);
+    // });
+  }
+
+  @override
+  void dispose() {
+    _buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _swipeAnimation() async {
+    try {
+      await _buttonController.forward();
+    } on TickerCanceled {}
+  }
+
+  dismissImg(Decision img) {
+    setState(() {
+      widget.decisions.remove(img);
+    });
+  }
+
+  addImg(Decision decision) {
+    Firestore.instance.collection('restaurants').document(decision.recommendation.hash)
+      .updateData({"frequency": FieldValue.increment(1.0)});
+
+    setState(() {
+      widget.decisions.remove(decision);
+      widget.decisions.add(decision);
+    });
+  }
+
+  swipeRight() {
+    if (flag == 0)
+      setState(() {
+        flag = 1;
+      });
+    _swipeAnimation();
+  }
+
+  swipeLeft() {
+    if (flag == 1)
+      setState(() {
+        flag = 0;
+      });
+    _swipeAnimation();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: background,
-      body: SafeArea(
-        child: GestureDetector(
-          onPanUpdate: (details) {
-            if (details.delta.dx < 0) {
-              // _slideController.forward();
-            }
-          },
-          child: Stack(
-            children: <Widget> [
-              CarouselSlider(
-                height: MediaQuery.of(context).size.height,
-                enableInfiniteScroll: false,
-                scrollDirection: Axis.vertical,
-                items: widget.decisions.map((decision) {
-                  return Builder(
-                    builder: (BuildContext context) {
-                      return decisionCard(decision, context);
-                    },
-                  );
-                }).toList(),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                child: Padding (
-                  padding: EdgeInsets.all(16.0),
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    icon: Icon(Icons.arrow_back),
-                  ),
-                ),
-              ),
-            ],
+    double initialBottom = 15.0;
+    var dataLength = widget.decisions.length;
+    double backCardPosition = initialBottom + (dataLength - 1) * 10 + 10;
+    double backCardWidth = -10.0;
+    List<Widget> w = [
+      Positioned(
+        top: 0,
+        left: 0,
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: IconButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            icon: Icon(Icons.arrow_back),
           ),
         ),
       ),
-    );
+    ];
+    w.addAll(widget.decisions.getRange(max(0, widget.decisions.length - 3), widget.decisions.length - 1).map((Decision item) {
+        if (widget.decisions.indexOf(item) ==
+            dataLength - 1) {
+          return cardDecision(
+              item,
+              bottom.value,
+              right.value,
+              0.0,
+              backCardWidth + 10,
+              rotate.value,
+              rotate.value < -10 ? 0.1 : 0.0,
+              context,
+              dismissImg,
+              flag,
+              addImg,
+              swipeRight,
+              swipeLeft);
+        } else {
+          backCardPosition = backCardPosition;
+          backCardWidth = backCardWidth;
+
+          return cardDecisionDummy(
+              item,
+              bottom.value,
+              right.value,
+              0.0,
+              backCardWidth,
+              0.0,
+              0.0,
+              context);
+        }
+      }).toList());
+    return Scaffold(
+        backgroundColor: background,
+        body: SafeArea(
+            child: GestureDetector(
+                onPanUpdate: (details) {
+                  if (details.delta.dx < 0) {
+                    // _slideController.forward();
+                  }
+                },
+                child: new Container(
+                  color: background,
+                  alignment: Alignment.center,
+                  child: dataLength > 0
+                      ? new Stack(
+                          alignment: AlignmentDirectional.center,
+                          children: w
+                        )
+                      : new Text("Sorry we couldn't help you...",
+                          style: new TextStyle(
+                              color: Colors.white, fontSize: 50.0)),
+                ))));
   }
 }
