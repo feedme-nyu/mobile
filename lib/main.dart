@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,13 +16,21 @@ class MyApp extends StatelessWidget {
     if (user == null) {
       throw "No registered user";
     }
-    return User(user);
+    try {
+      DocumentSnapshot db = await Firestore.instance.collection('user-trends').document(user.uid).get();
+      return User(user, db["history"]);
+    }
+    catch (error) {
+      Firestore.instance.collection('user-trends').document(user.uid).setData({"history": []});
+      return User(user, []);
+    }
   }
   
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FeedMe',
+      initialRoute: '/',
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),

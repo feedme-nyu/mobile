@@ -1,11 +1,13 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:feedme/app/widget-decision-dialog.dart';
 import 'package:feedme/struct/user.dart';
 import 'package:flutter/material.dart';
 
 import 'package:feedme/app/consts.dart';
 import 'package:feedme/struct/decision.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'widget-animated-card.dart';
 import 'widget-back-card.dart';
 
@@ -27,6 +29,8 @@ class _DecisionPageState extends State<DecisionPage>
   Animation<double> bottom;
   Animation<double> width;
   int flag = 0;
+  bool madeDecision = false;
+  Decision chosen;
 
   void initState() {
     super.initState();
@@ -64,8 +68,8 @@ class _DecisionPageState extends State<DecisionPage>
       ),
     );
     bottom = new Tween<double>(
-      begin: 15.0,
-      end: 100.0,
+      begin: 0.0,
+      end: 20.0,
     ).animate(
       new CurvedAnimation(
         parent: _buttonController,
@@ -83,9 +87,9 @@ class _DecisionPageState extends State<DecisionPage>
     );
 
     // Sort
-    // widget.decisions.sort((Decision a, Decision b) {
-    //   return a.recommendation.score.compareTo(b.recommendation.score);
-    // });
+    widget.decisions.sort((Decision a, Decision b) {
+      return b.score.compareTo(a.score);
+    });
   }
 
   @override
@@ -108,12 +112,54 @@ class _DecisionPageState extends State<DecisionPage>
 
   addImg(Decision decision) {
     Firestore.instance.collection('restaurants').document(decision.recommendation.hash)
-      .updateData({"frequency": FieldValue.increment(1.0)});
-
-    setState(() {
-      widget.decisions.remove(decision);
-      widget.decisions.add(decision);
-    });
+      .setData({
+        "frequency": FieldValue.increment(1.0),
+        "categories": decision.recommendation.categories,
+        "id": decision.recommendation.hash
+      });
+    
+    widget.user.history.addAll(decision.recommendation.categories);
+    
+    Firestore.instance.collection('user-trends').document(widget.user.identity.uid)
+      .updateData({
+        "history": widget.user.history
+      });
+    
+    widget.decisions.remove(decision);
+    widget.decisions.add(decision);
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext ctx) {
+        Widget dialog = DecisionDialog(
+          decision, 
+          () {
+            Navigator.of(ctx).pop();
+          },
+          () async {
+            String url = 'https://www.google.com/maps/search/?api=1&query_place_id=' + decision.recommendation.id + 
+              '&query=' + Uri.encodeComponent(decision.recommendation.address);
+            if (await canLaunch(url)) {
+              await launch(url);
+              Navigator.of(ctx).popUntil((Route<dynamic> r) => r.isFirst);
+            } else {
+              final snackBar = SnackBar(content: Text('Opps, something went wrong!'));
+              // Find the Scaffold in the widget tree and use it to show a SnackBar.
+              Scaffold.of(context).showSnackBar(snackBar);
+            }
+          },
+          false
+        );
+        return Stack(
+          children: <Widget> [
+            Material(
+              type: MaterialType.transparency,
+            ),
+            dialog,
+          ] 
+        );
+      }
+    );
   }
 
   swipeRight() {
@@ -153,7 +199,7 @@ class _DecisionPageState extends State<DecisionPage>
         ),
       ),
     ];
-    w.addAll(widget.decisions.getRange(max(0, widget.decisions.length - 3), widget.decisions.length - 1).map((Decision item) {
+    w.addAll(widget.decisions.sublist(max(0, widget.decisions.length - 2), widget.decisions.length).map((Decision item) {
         if (widget.decisions.indexOf(item) ==
             dataLength - 1) {
           return cardDecision(
@@ -161,7 +207,7 @@ class _DecisionPageState extends State<DecisionPage>
               bottom.value,
               right.value,
               0.0,
-              backCardWidth + 10,
+              backCardWidth + 30,
               rotate.value,
               rotate.value < -10 ? 0.1 : 0.0,
               context,
@@ -185,6 +231,7 @@ class _DecisionPageState extends State<DecisionPage>
               context);
         }
       }).toList());
+
     return Scaffold(
         backgroundColor: background,
         body: SafeArea(

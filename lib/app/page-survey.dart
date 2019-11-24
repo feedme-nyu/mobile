@@ -164,18 +164,21 @@ class _SurveyPageState extends State<SurveyPage> {
         child: Column(
           children: <Widget> [
             Navigator.of(context).canPop() ?
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget> [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    icon: Icon(Icons.arrow_back),
-                  ),
-                  Text("Your Preferences", style: TextStyle(fontSize: 18.0),)
-                ],
-              ) : Container(),
+              Padding(
+                padding: EdgeInsets.only(top: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget> [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: Icon(Icons.arrow_back),
+                    ),
+                    Text("Your Preferences", style: TextStyle(fontSize: 18.0),)
+                  ],
+                ),
+              ) : null,
             Center(
               child: state == 0 ? getStarted() : 
                 (state == 1 ? survey(context) : ending()),

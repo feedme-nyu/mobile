@@ -27,17 +27,20 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget> [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget> [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    icon: Icon(Icons.arrow_back),
-                  ),
-                  Text("Your Profile", style: TextStyle(fontSize: 18.0),)
-                ],
+              Padding(
+                padding: EdgeInsets.only(top: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget> [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: Icon(Icons.arrow_back),
+                    ),
+                    Text("Your Profile", style: TextStyle(fontSize: 18.0),)
+                  ],
+                ),
               ),
               Padding(
                 padding: EdgeInsets.all(16.0),

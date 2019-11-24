@@ -1,4 +1,4 @@
-package com.example.feedme
+package com.feedme.app
 
 import android.os.Bundle
 

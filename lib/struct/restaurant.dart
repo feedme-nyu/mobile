@@ -4,20 +4,22 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 class Restaurant {
-  final String address;
-  final String name;
-  final double score;
+  String address;
+  String name;
   final String image;
   final double distance;
   final String id;
   final int price;
   final double rating;
   final int ratingN;
+  final int estimated;
+  final List<String> categories;
   String hash;
 
-  Restaurant({this.distance, this.id, this.price, this.rating, this.ratingN, this.address, this.name, this.score, this.image});
 
-  factory Restaurant.fromJson(Map<String, dynamic> json) {
+  Restaurant({this.estimated, this.categories, this.distance, this.id, this.price, this.rating, this.ratingN, this.address, this.name, this.image});
+
+  factory Restaurant.fromJson(Map<String, dynamic> json) {    
     Restaurant r = Restaurant(
       address: List<String>.from(json["address"]).join(" "),
       name: json["name"],
@@ -25,12 +27,15 @@ class Restaurant {
       rating: json["rating"],
       ratingN: json["rating_n"],
       image: json["photo"],
-      score: json["score"],
       id: json["place_id"],
-      price: json["price"]
+      price: json["price"],
+      estimated: json["time"],
+      categories: List<String>.from(json["categories"])
     );
-    var bytes = utf8.encode(r.name.toLowerCase() + r.address.toLowerCase());
+    var bytes = utf8.encode(r.name.toLowerCase() + List<String>.from(json["address"])[0].toLowerCase());
     Digest digest = md5.convert(bytes);
-    r.hash = digest.toString();
+    r.hash = digest.toString();   
+
+    return r;
   }
 }

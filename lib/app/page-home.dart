@@ -1,21 +1,20 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:feedme/app/page-loader.dart';
+import 'package:feedme/struct/decision.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:feedme/app/consts.dart';
-import 'package:feedme/app/page-decisions.dart';
 import 'package:feedme/app/page-profile.dart';
 
 import 'package:feedme/struct/user.dart';
-import 'package:feedme/struct/decision.dart';
-import 'package:feedme/struct/restaurant.dart';
 
 import 'package:flutter/foundation.dart' as Foundation;
 import 'package:http/http.dart' as http;
+
+class PermissionException implements Exception {}
+class LocationException implements Exception {}
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title, this.user}) : super(key: key);
@@ -35,27 +34,41 @@ class _MyHomePageState extends State<MyHomePage>
   Animation<double> scaleAnimation;
   bool showDia = false;
 
-  Future <http.Response> _getDecisions () async {
+  Future<Future<http.Response>> _getDecisions () async {
     String api = "";
     if (Foundation.kReleaseMode) {
       // Release
       api = "https://feedme-75319.appspot.com/api/FEEDME";
     }
     else {
-      api = "http://localhost:5000/api/FEEDME";
+      if (Platform.isAndroid) {
+        api = "http://10.0.2.2:5000/api/FEEDME";
+      }
+      else {
+        api = "http://localhost:5000/api/FEEDME";
+      }
+      // api = "https://feedme-75319.appspot.com/api/FEEDME";
     }
     
-    GeolocationStatus geostatus = await Geolocator().checkGeolocationPermissionStatus();
-    if (geostatus == GeolocationStatus.denied) {
-      throw "location";
+    Position position;
+    try {
+      position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      if (position == null) {
+        GeolocationStatus geostatus = await Geolocator().checkGeolocationPermissionStatus();
+        if (geostatus == GeolocationStatus.denied) {
+          throw PermissionException();
+        }
+      }
     }
-    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    catch (Exception) {
+      throw LocationException;
+    }
 
     String token = await widget.user.identity.getIdToken();
 
-    String uid = "teddy";
+    String uid = widget.user.identity.uid;
     String query = "?uid=" + uid + "&x=" + position.latitude.toString() + "&y=" + position.longitude.toString();
-    return http.get(api + query, headers: {HttpHeaders.authorizationHeader: "Bearer " + token});     
+    return Future<Future<http.Response>>.value(http.get(api + query, headers: {HttpHeaders.authorizationHeader: "Bearer " + token}));
   }
 
   @override
@@ -81,27 +94,6 @@ class _MyHomePageState extends State<MyHomePage>
     }
     else {
       menuAnimationController.reverse();
-    }
-
-    if (showDia) {
-      
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Not in stock'),
-            content: const Text('This item is no longer available'),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('Ok'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
     }
 
     return GestureDetector (
@@ -165,14 +157,6 @@ class _MyHomePageState extends State<MyHomePage>
                           child: Text("My Profile"),
                         ),
                       ),
-                      Container(
-                        height: 50.0,
-                        width: 150.0,
-                        child: FlatButton (
-                          onPressed: () {}, 
-                          child: Text("App Settings"),
-                        ),
-                      ),
                     ],
                   ),
                 )
@@ -187,21 +171,53 @@ class _MyHomePageState extends State<MyHomePage>
                     Padding (
                       padding: EdgeInsets.all(24.0),
                       child: OutlineButton(
-                        onPressed: () {
+                        onPressed: () async {
                           try {
-                            Future<http.Response> decisionGetter = _getDecisions();
+                            Future<http.Response> decisionGetter = await _getDecisions();
+                            print(decisionGetter);
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (context) { 
                                 return LoadingPage(decisionGetter, widget.user);
                               })
                             );
                           }
-                          catch (onError) {
-                            if (onError == "location") {
-                              setState(() {
-                                showDia = true;
-                              });
-                            }
+                          on PermissionException {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Location Error'),
+                                  content: const Text('We need your location to find you food!'),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      child: Text('Ok'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                          on LocationException {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Location Error'),
+                                  content: const Text('We couldn\'t find your location, please make sure it\'s enabled.'),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      child: Text('Ok'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           }
                         },
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),

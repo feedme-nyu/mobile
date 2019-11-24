@@ -43,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     final FirebaseUser currentUser = await _auth.currentUser();
     assert(user.uid == currentUser.uid);
 
-    return User(user);
+    return User(user, []);
   }
 
   @override

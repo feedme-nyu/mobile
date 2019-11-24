@@ -6,7 +6,6 @@ import 'package:feedme/struct/decision.dart';
 import 'package:feedme/struct/restaurant.dart';
 import 'package:feedme/struct/user.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:feedme/app/consts.dart';
@@ -27,10 +26,8 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     sub = widget.decisions.asStream().listen((http.Response response) {
-      print("Responsy");
       print(response.statusCode);
       if (response.statusCode != 200) {
-        print("Failed");
         Fluttertoast.showToast(
           msg: "Oops, something went wrong, try again in a couple seconds...",
           toastLength: Toast.LENGTH_SHORT,
@@ -39,21 +36,24 @@ class _LoadingPageState extends State<LoadingPage> {
           textColor: Colors.white,
           fontSize: 16.0
         );
+        print("network");
+        print(response.body);
+        print(response.statusCode);
         throw "network";
       }
       else {
-        print(response.body);
         Map<String, dynamic> results = json.decode(response.body);
         List<Map <String, dynamic>> decisions = List<Map <String, dynamic>>.from(results["decisions"]);
         
         List<Decision> output = List<Decision>();
         for (int i = 0; i < decisions.length; ++i) {
           Map<String, dynamic> m = decisions[i];
+          Restaurant newR = Restaurant.fromJson(m);
           output.add(Decision(
-            recommendation: Restaurant.fromJson(m),
+            score: m["score"],
+            recommendation: newR,
           ));
         }
-        print("done");
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) { 
             return DecisionPage(output, widget.user);
