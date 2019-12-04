@@ -1,4 +1,4 @@
-package com.feedme.app
+package me.please_feed.app
 
 import android.os.Bundle
 

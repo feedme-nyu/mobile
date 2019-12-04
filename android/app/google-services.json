@@ -52,17 +52,17 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:732751471448:android:df17e32f2d00f26de17b2d",
+        "mobilesdk_app_id": "1:732751471448:android:8df779a9784e9cd4e17b2d",
         "android_client_info": {
-          "package_name": "com.feedme.app"
+          "package_name": "me.please_feed.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "732751471448-stpnta1fbdqcv8namlibn5pkhp084m2b.apps.googleusercontent.com",
+          "client_id": "732751471448-5gcc8apcet3fgdlj4psjbrqcvkua9e3c.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.feedme.app",
+            "package_name": "me.please_feed.app",
             "certificate_hash": "8bcbff73a6201962394319817149041464f13bb0"
           }
         },

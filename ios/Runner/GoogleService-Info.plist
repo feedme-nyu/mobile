@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>732751471448-gt9u6p5sj9re0mlbu1riicvk3gvh5jfk.apps.googleusercontent.com</string>
+	<string>732751471448-d1tg4f4fr960d3m7i1gq3e02rbfa2d09.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.732751471448-gt9u6p5sj9re0mlbu1riicvk3gvh5jfk</string>
+	<string>com.googleusercontent.apps.732751471448-d1tg4f4fr960d3m7i1gq3e02rbfa2d09</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>732751471448-con103dsjpdvijas9kati41srcu5ui1h.apps.googleusercontent.com</string>
+	<string>732751471448-a6ar513ol22fo66k31l21lkdgp70jdv3.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCsV8xRbVrxrseYnkZiWGpaB12TEtivPgY</string>
 	<key>GCM_SENDER_ID</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.feedme</string>
+	<string>me.please-feed.app</string>
 	<key>PROJECT_ID</key>
 	<string>feedme-75319</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:732751471448:ios:80c6b345179b1f80e17b2d</string>
+	<string>1:732751471448:ios:176e824c2c939fe2e17b2d</string>
 	<key>DATABASE_URL</key>
 	<string>https://feedme-75319.firebaseio.com</string>
 </dict>

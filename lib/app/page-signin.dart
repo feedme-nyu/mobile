@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:feedme/app/page-survey.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
@@ -36,14 +38,22 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final FirebaseUser user = await _auth.signInWithCredential(credential);
-    
+
     assert(!user.isAnonymous);
     assert(await user.getIdToken() != null);
 
     final FirebaseUser currentUser = await _auth.currentUser();
     assert(user.uid == currentUser.uid);
 
-    return User(user, []);
+    try {
+      // User already has an account
+      DocumentSnapshot db = await Firestore.instance.collection('user-trends').document(user.uid).get();
+      return User(user, db["history"]);
+    }
+    catch (error) {
+      // User does not have an account
+      return User(user, []);
+    }
   }
 
   @override
@@ -76,8 +86,13 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () {
                   _signInWithGoogle().then((user) {
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) { 
-                        return MyHomePage(title: "Feed Me", user: user);
+                      MaterialPageRoute(builder: (context) {
+                        if (user.history.length == 0) {
+                          return SurveyPage(user: user);
+                        }
+                        else {
+                          return MyHomePage(title: "Feed Me", user: user);
+                        }
                       })
                     );
                   }).catchError((error) {});

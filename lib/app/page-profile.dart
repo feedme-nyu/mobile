@@ -69,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: OutlineButton(
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                      return SurveyPage();
+                      return SurveyPage(user: widget.user);
                     }));
                   },
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),

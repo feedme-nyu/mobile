@@ -52,7 +52,6 @@ class _DecisionPageState extends State<DecisionPage>
         if (rotate.isCompleted) {
           var i = widget.decisions.removeLast();
           widget.decisions.insert(0, i);
-
           _buttonController.reset();
         }
       });
@@ -86,10 +85,13 @@ class _DecisionPageState extends State<DecisionPage>
       ),
     );
 
+    if (widget.decisions.length == 0) { }
     // Sort
-    widget.decisions.sort((Decision a, Decision b) {
-      return b.score.compareTo(a.score);
-    });
+    else {
+      widget.decisions.sort((Decision a, Decision b) {
+        return b.score.compareTo(a.score);
+      });
+    }
   }
 
   @override
@@ -126,7 +128,6 @@ class _DecisionPageState extends State<DecisionPage>
       });
     
     widget.decisions.remove(decision);
-    widget.decisions.add(decision);
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -199,7 +200,8 @@ class _DecisionPageState extends State<DecisionPage>
         ),
       ),
     ];
-    w.addAll(widget.decisions.sublist(max(0, widget.decisions.length - 2), widget.decisions.length).map((Decision item) {
+    if (dataLength > 0) {
+      w.addAll(widget.decisions.sublist(max(0, widget.decisions.length - 2), widget.decisions.length).map((Decision item) {
         if (widget.decisions.indexOf(item) ==
             dataLength - 1) {
           return cardDecision(
@@ -231,7 +233,20 @@ class _DecisionPageState extends State<DecisionPage>
               context);
         }
       }).toList());
-
+    }
+    else {
+      w.add(Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: EdgeInsets.all(18.0),
+          child: Text("We don't have any more recommendations for your area.",
+            textAlign: TextAlign.center,
+            style: new TextStyle(
+              color: Colors.black, fontSize: 18.0)),
+          )
+        )
+      );
+    }
     return Scaffold(
         backgroundColor: background,
         body: SafeArea(
@@ -244,14 +259,10 @@ class _DecisionPageState extends State<DecisionPage>
                 child: new Container(
                   color: background,
                   alignment: Alignment.center,
-                  child: dataLength > 0
-                      ? new Stack(
-                          alignment: AlignmentDirectional.center,
-                          children: w
-                        )
-                      : new Text("Sorry we couldn't help you...",
-                          style: new TextStyle(
-                              color: Colors.white, fontSize: 50.0)),
+                  child: Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: w
+                  )
                 ))));
   }
 }

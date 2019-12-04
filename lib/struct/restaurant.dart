@@ -21,7 +21,7 @@ class Restaurant {
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {    
     Restaurant r = Restaurant(
-      address: List<String>.from(json["address"]).join(" "),
+      address: List<String>.from(json["address"]).join(","),
       name: json["name"],
       distance: json["distance"],
       rating: json["rating"],
@@ -34,8 +34,14 @@ class Restaurant {
     );
     var bytes = utf8.encode(r.name.toLowerCase() + List<String>.from(json["address"])[0].toLowerCase());
     Digest digest = md5.convert(bytes);
-    r.hash = digest.toString();   
-
+    r.hash = digest.toString();
+    print(r.name[0]);
+    if (r.name[0] == "b" && r.name[1] == "\'") {
+      r.name = r.name.substring(2, r.name.length - 1);
+    }
+    if (r.address[0] == "b" && r.address[1] == "\'") {
+      r.address = r.address.substring(2, r.address.length - 1);
+    }
     return r;
   }
 }

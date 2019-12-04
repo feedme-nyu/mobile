@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:feedme/app/page-survey.dart';
 import 'package:flutter/material.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,23 +7,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:feedme/app/page-signin.dart';
 import 'package:feedme/app/page-home.dart';
 import 'package:feedme/struct/user.dart';
+import 'package:splashscreen/splashscreen.dart';
+
+import 'app/consts.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  Future<User> _showLoginPage() async {
+  Future<dynamic> _showLoginPage() async {
     FirebaseAuth _auth = FirebaseAuth.instance;
     FirebaseUser user = await _auth.currentUser();
     if (user == null) {
-      throw "No registered user";
+      return LoginPage();
     }
     try {
       DocumentSnapshot db = await Firestore.instance.collection('user-trends').document(user.uid).get();
-      return User(user, db["history"]);
+      return MyHomePage(user: User(user, db["history"]));
     }
     catch (error) {
       Firestore.instance.collection('user-trends').document(user.uid).setData({"history": []});
-      return User(user, []);
+      return SurveyPage(user: User(user, []));
     }
   }
   
@@ -34,16 +38,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: FutureBuilder<User>(
-        future: _showLoginPage(),
-        builder: (buildContext, snapshot) {
-          if (snapshot.hasData) {
-            return MyHomePage(title: 'Feed Me', user: snapshot.data);
-          }
-          else {
-            return LoginPage();
-          }
-        }
+      home: SplashScreen(
+        navigateAfterFuture: _showLoginPage(),
+        // seconds: 10,
+        title: Text(""),
+        image: Image.asset('assets/launcher/icon-old.png'),
+        backgroundColor: background,
+        styleTextUnderTheLoader: TextStyle(),
+        photoSize: 100.0,
+        loaderColor: primary
       )
     );
   }

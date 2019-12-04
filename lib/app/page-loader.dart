@@ -26,8 +26,28 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     sub = widget.decisions.asStream().listen((http.Response response) {
-      print(response.statusCode);
-      if (response.statusCode != 200) {
+      if (response.statusCode == 201) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Sorry!'),
+              content: const Text('We couldn\'t find any restaurants in your area that are currently open. Check back later!'),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        ).then((_) {
+          Navigator.of(context).pop();
+        });
+      }
+      else if (response.statusCode != 200) {
         Fluttertoast.showToast(
           msg: "Oops, something went wrong, try again in a couple seconds...",
           toastLength: Toast.LENGTH_SHORT,
@@ -36,10 +56,6 @@ class _LoadingPageState extends State<LoadingPage> {
           textColor: Colors.white,
           fontSize: 16.0
         );
-        print("network");
-        print(response.body);
-        print(response.statusCode);
-        throw "network";
       }
       else {
         Map<String, dynamic> results = json.decode(response.body);

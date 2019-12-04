@@ -114,6 +114,7 @@ Positioned cardDecision(
                                       padding: new EdgeInsets.all(0.0),
                                       onPressed: () {
                                         swipeLeft();
+                                        dismissImg(img);
                                       },
                                       borderSide: BorderSide(color: Color.fromARGB(255, 100, 100, 100), width: 2.0),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
