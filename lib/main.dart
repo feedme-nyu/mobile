@@ -22,7 +22,13 @@ class MyApp extends StatelessWidget {
     }
     try {
       DocumentSnapshot db = await Firestore.instance.collection('user-trends').document(user.uid).get();
-      return MyHomePage(user: User(user, db["history"]));
+      Map<String, dynamic> data = db.data;
+      List<String> history = List<String>.from(data["history"]);
+      print(history.length);
+      if (history.length == 0) {
+        return SurveyPage(user: User(user, []));  
+      }
+      return MyHomePage(user: User(user, history));
     }
     catch (error) {
       Firestore.instance.collection('user-trends').document(user.uid).setData({"history": []});
@@ -35,6 +41,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'FeedMe',
       initialRoute: '/',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),

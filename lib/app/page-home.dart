@@ -47,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage>
       else {
         api = "http://localhost:5000/api/FEEDME";
       }
-      // api = "https://feedme-75319.appspot.com/api/FEEDME";
+      api = "https://feedme-75319.appspot.com/api/FEEDME";
     }
     
     Position position;

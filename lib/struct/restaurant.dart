@@ -36,10 +36,10 @@ class Restaurant {
     Digest digest = md5.convert(bytes);
     r.hash = digest.toString();
     print(r.name[0]);
-    if (r.name[0] == "b" && r.name[1] == "\'") {
+    if (r.name[0] == "b" && (r.name[1] == "\'" || r.name[1] == "\"")) {
       r.name = r.name.substring(2, r.name.length - 1);
     }
-    if (r.address[0] == "b" && r.address[1] == "\'") {
+    if (r.address[0] == "b" && (r.address[1] == "\'" || r.address[1] == "\"")) {
       r.address = r.address.substring(2, r.address.length - 1);
     }
     return r;
